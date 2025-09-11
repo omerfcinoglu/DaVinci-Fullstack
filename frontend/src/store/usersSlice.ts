@@ -12,10 +12,17 @@ type UsersState = {
 
 const initialState: UsersState = { items: [], loading: false, error: null };
 
-export const fetchUsers = createAsyncThunk<User[], void, { extra: ThunkExtra }>(
-  "users/fetchAll",
-  async (_, { extra }) => extra.users.list()
-);
+export const fetchUsers = createAsyncThunk<
+  User[],
+  void,
+  { state: RootState; extra: ThunkExtra }
+>("users/fetchAll", async (_, { getState, extra }) => {
+  const already = getState().users.items;
+  if (already.length) {
+    return already;
+  }
+  return extra.users.list();
+});
 
 // "orkestratör" thunk
 export const deleteUserCascade = createAsyncThunk<

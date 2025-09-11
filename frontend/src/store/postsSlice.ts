@@ -11,12 +11,15 @@ type PostsState = {
 
 const initialState: PostsState = { items: [], loading: false, error: null };
 
-export const fetchPosts = createAsyncThunk<Post[], void, { extra: ThunkExtra }>(
-  "posts/fetchAll",
-  async (_, { extra }) => {
-    return extra.posts.list();
-  }
-);
+export const fetchPosts = createAsyncThunk<
+  Post[],
+  void,
+  { state: RootState; extra: ThunkExtra }
+>("posts/fetchAll", async (_, { getState, extra }) => {
+  const already = getState().posts.items;
+  if (already.length) return already;
+  return extra.posts.list();
+});
 
 const postsSlice = createSlice({
   name: "posts",
