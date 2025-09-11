@@ -13,6 +13,7 @@ type Props = {
     readonly getColor?: GetColor;
     readonly onSelectionChange?: (keys: Selection, selectedItems: UserItem[]) => void;
     readonly onSaveUser?: (id: number, patch: { name: string; username: string; email: string }) => void;
+    readonly onDeleteUser?: (id: number) => void;
 };
 
 export function UserListbox({
@@ -21,7 +22,8 @@ export function UserListbox({
     defaultSelectedKeys = [],
     getColor,
     onSelectionChange,
-    onSaveUser
+    onSaveUser,
+    onDeleteUser
 }: Props) {
     const [selected, setSelected] = React.useState<Selection>(new Set(defaultSelectedKeys));
     const selectedKeys = React.useMemo<string[]>(() => {
@@ -56,6 +58,17 @@ export function UserListbox({
                 ? Array.from(items)
                 : items.filter((i) => (keys as Set<React.Key>).has(String(i.user.id)));
         onSelectionChange(keys, picked);
+    };
+
+    const handleDeleteFromModal = (id: number) => {
+        if (onDeleteUser) onDeleteUser(id);
+        setSelected(prev => {
+            if (prev === "all") return new Set(); // basit çözüm: hepsini temizle
+            const next = new Set(Array.from(prev));
+            next.delete(String(id));
+            return next;
+        });
+        setIsModalOpen(false);
     };
 
     return (
@@ -94,6 +107,7 @@ export function UserListbox({
                 user={editingUser}
                 onClose={closeEdit}
                 onSave={onSaveUser ?? ((id, patch) => console.log("Save user (default):", { id, ...patch }))}
+                onDelete={handleDeleteFromModal}
             />
         </ListboxWrapper>
     );

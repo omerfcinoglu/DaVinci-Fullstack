@@ -5,6 +5,7 @@ import {
     selectUsers,
     selectUsersLoading,
     updateUser,
+    deleteUserCascade
 } from "@/store/usersSlice";
 
 import DefaultLayout from "@/layouts/default";
@@ -88,6 +89,7 @@ export default function Home() {
                             onSaveUser={(id, patch) => {
                                 dispatch(updateUser({ id, patch }));
                             }}
+                            onDeleteUser={(id) => dispatch(deleteUserCascade(id))}
                         />
                     )}
 
