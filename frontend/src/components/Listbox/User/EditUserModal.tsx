@@ -1,118 +1,137 @@
-import React from "react";
+import React from 'react';
 import {
-    Button,
-    Input,
     Modal,
-    ModalBody,
     ModalContent,
-    ModalFooter,
     ModalHeader,
-} from "@heroui/react";
-import type { User } from "@/domain/types";
+    Button,
+    ModalFooter,
+} from '@heroui/react';
+import type { User, NewUser } from '@/domain/types';
+import { UserFormModal } from './UserFormModal';
+import { DeleteConfirmationModal } from './DeleteConfirmationModal';
+import type { ModalMode, ModalState } from './types';
 
-type Props = {
+interface Props {
     readonly isOpen: boolean;
+    readonly mode?: ModalMode;
     readonly user: User | null;
+    readonly isLoading?: boolean;
+    readonly error?: string | null;
     readonly onClose: () => void;
-    readonly onSave?: (id: number, patch: { name: string; username: string; email: string }) => void;
-    readonly onDelete?: (id: number) => void; // 👈 eklendi
-};
+    readonly onSave?: (id: number, patch: Omit<User, 'id'>) => Promise<void> | void;
+    readonly onDelete?: (id: number) => Promise<void> | void;
+    readonly onCreate?: (input: NewUser) => Promise<void> | void;
+}
 
-export function EditUserModal({ isOpen, user, onClose, onSave, onDelete }: Props) {
-    const [form, setForm] = React.useState({ name: "", username: "", email: "" });
-    const [confirmingDelete, setConfirmingDelete] = React.useState(false); // 👈 eklendi
+export const EditUserModal = React.memo<Props>(({
+    isOpen,
+    mode = 'edit',
+    user,
+    onClose,
+    onSave,
+    onDelete,
+    onCreate,
+    isLoading = false,
+    error = null,
+}) => {
+    const [modalState, setModalState] = React.useState<ModalState>('form');
 
+    // Reset modal state when modal opens/closes or mode changes
     React.useEffect(() => {
-        if (user) {
-            setForm({ name: user.name, username: user.username, email: user.email });
-            setConfirmingDelete(false); // modal her açıldığında sıfırla
+        if (isOpen) {
+            setModalState('form');
         }
-    }, [user]);
+    }, [isOpen, mode]);
+
+    const getModalTitle = (): string => {
+        if (modalState === 'delete-confirmation') {
+            return 'Delete User';
+        }
+
+        if (mode === 'create') {
+            return 'Add User';
+        }
+
+        const userIdSuffix = user ? ` — #${user.id}` : '';
+        return `Edit User${userIdSuffix}`;
+    };
+
+    const handleDeleteClick = (): void => {
+        setModalState('delete-confirmation');
+    };
+
+    const handleCancelDelete = (): void => {
+        setModalState('form');
+    };
+
+    const renderModalContent = (): React.ReactNode => {
+        if (modalState === 'delete-confirmation' && user && onDelete) {
+            return (
+                <DeleteConfirmationModal
+                    isOpen={isOpen}
+                    user={user}
+                    onDelete={onDelete}
+                    onCancel={handleCancelDelete}
+                    onClose={onClose}
+                />
+            );
+        }
+
+        return (
+            <>
+                <UserFormModal
+                    isOpen={isOpen}
+                    mode={mode}
+                    user={user}
+                    onSave={onSave}
+                    onCreate={onCreate}
+                    onClose={onClose}
+                    isLoading={isLoading}
+                    error={error}
+                />
+
+                {mode === 'edit' && onDelete && (
+                    <ModalFooter className="pt-2">
+                        <Button
+                            color="danger"
+                            variant="flat"
+                            onPress={handleDeleteClick}
+                            size="sm"
+                        >
+                            Delete User
+                        </Button>
+                    </ModalFooter>
+                )}
+            </>
+        );
+    };
 
     return (
-        <Modal isOpen={isOpen} onOpenChange={onClose} backdrop="blur" placement="center" size="md">
+        <Modal
+            isOpen={isOpen}
+            onOpenChange={onClose}
+            backdrop="blur"
+            placement="center"
+            size="md"
+            classNames={{
+                base: "bg-background",
+                backdrop: "bg-black/50",
+                header: "border-b border-divider",
+                footer: "border-t border-divider",
+            }}
+        >
             <ModalContent>
                 {() => (
                     <>
                         <ModalHeader className="flex flex-col">
-                            Edit User{user ? ` — #${user.id}` : ""}
+                            {getModalTitle()}
                         </ModalHeader>
-
-                        <ModalBody>
-                            {!confirmingDelete ? (
-                                <>
-                                    <Input
-                                        label="Name"
-                                        value={form.name}
-                                        onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
-                                    />
-                                    <Input
-                                        label="Username"
-                                        value={form.username}
-                                        onChange={(e) => setForm((f) => ({ ...f, username: e.target.value }))}
-                                    />
-                                    <Input
-                                        label="Email"
-                                        type="email"
-                                        value={form.email}
-                                        onChange={(e) => setForm((f) => ({ ...f, email: e.target.value }))}
-                                    />
-                                </>
-                            ) : (
-                                <p className="text-danger font-medium">
-                                    Are you sure you want to delete this user?
-                                </p>
-                            )}
-                        </ModalBody>
-
-                        <ModalFooter>
-                            {!confirmingDelete ? (
-                                <>
-                                    <Button variant="flat" onPress={onClose}>
-                                        Cancel
-                                    </Button>
-                                    <Button
-                                        color="danger"
-                                        variant="flat"
-                                        onPress={() => setConfirmingDelete(true)} // 👈 onay moduna geç
-                                    >
-                                        Delete
-                                    </Button>
-                                    <Button
-                                        color="primary"
-                                        onPress={() => {
-                                            if (!user) return;
-                                            const updated = { ...user, ...form };
-                                            if (onSave) onSave(user.id, form);
-                                            else console.log("Save user (modal):", updated);
-                                            onClose();
-                                        }}
-                                    >
-                                        Save
-                                    </Button>
-                                </>
-                            ) : (
-                                <>
-                                    <Button variant="flat" onPress={() => setConfirmingDelete(false)}>
-                                        No
-                                    </Button>
-                                    <Button
-                                        color="danger"
-                                        onPress={() => {
-                                            if (!user) return;
-                                            if (onDelete) onDelete(user.id);
-                                            else console.log("Delete user (modal):", user.id);
-                                            onClose();
-                                        }}
-                                    >
-                                        Yes, delete
-                                    </Button>
-                                </>
-                            )}
-                        </ModalFooter>
+                        {renderModalContent()}
                     </>
                 )}
             </ModalContent>
         </Modal>
     );
-}
+});
+
+EditUserModal.displayName = 'EditUserModal';

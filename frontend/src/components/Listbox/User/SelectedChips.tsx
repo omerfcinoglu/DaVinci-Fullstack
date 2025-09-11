@@ -1,6 +1,6 @@
 import React from "react";
 import { Chip, ScrollShadow } from "@heroui/react";
-import { EditIcon } from "lucide-react";
+import { EditIcon, PlusIcon } from "lucide-react";
 import type { UserItem, GetColor } from "./types";
 
 type Props = {
@@ -8,6 +8,7 @@ type Props = {
     readonly itemsById: Map<string, UserItem>;
     readonly getColor?: GetColor;
     readonly onEdit: (userId: number) => void;
+
 };
 
 export function SelectedChips({ selectedKeys, itemsById, getColor, onEdit }: Props) {
