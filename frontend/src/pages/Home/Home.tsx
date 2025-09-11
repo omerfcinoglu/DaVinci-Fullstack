@@ -15,6 +15,7 @@ import {
 import { getDeterministicAvatarUrl } from "@/utils/avatar";
 import { PostItem, PostsListbox } from "@/components/Listbox/PostListbox";
 import { fetchPosts, selectPosts, selectPostsLoading } from "@/store/postsSlice";
+import { colorForUserId } from "@/utils/colors";
 
 export default function Home() {
     const dispatch = useAppDispatch();
@@ -48,11 +49,27 @@ export default function Home() {
         setSelectedUserIds(ids);
     };
 
+    const userColorMap = useMemo(() => {
+        const map: Record<number, { bg: string; solid?: string }> = {}
+        for (const u of userItems) map[u.id] = colorForUserId(u.id)
+        return map
+    }, [userItems])
+
     // Filtrelenmiş postlar (Users seçimine göre)
     const filteredPostItems = useMemo(() => {
         if (!selectedUserIds.size) return allPostItems;
         return allPostItems.filter((p) => selectedUserIds.has(p.userId));
     }, [allPostItems, selectedUserIds]);
+
+    const highlightByUserId = useMemo(() => {
+        const out: Record<number, string> = {}
+        for (const uid of selectedUserIds) {
+            const c = userColorMap[uid]
+            if (c) out[uid] = c.bg
+        }
+        return out
+    }, [selectedUserIds, userColorMap])
+
 
     return (
         <DefaultLayout>
@@ -66,6 +83,7 @@ export default function Home() {
                             label="Users"
                             defaultSelectedKeys={[]}
                             onSelectionChange={onUsersChange}
+                            getColor={(id) => userColorMap[id]}  // ← seçili user item'larını renkle
                         />
                     )}
 
@@ -75,17 +93,11 @@ export default function Home() {
                         <PostsListbox
                             items={filteredPostItems}
                             label={
-                                (() => {
-                                    if (selectedUserIds.size) {
-                                        const userLabel = selectedUserIds.size > 1 ? "users" : "user";
-                                        return `Posts (filtered by ${selectedUserIds.size} ${userLabel})`;
-                                    }
-                                    return "Posts";
-                                })()
+                                selectedUserIds.size
+                                    ? `Posts (filtered by ${selectedUserIds.size} user${selectedUserIds.size > 1 ? "s" : ""})`
+                                    : "Posts"
                             }
-                            onSelectionChange={(_, selectedPosts) => {
-                                console.log("Selected posts:", selectedPosts);
-                            }}
+                            highlightByUserId={highlightByUserId} // ← postları aynı renkle vurgula
                         />
                     )}
                 </div>

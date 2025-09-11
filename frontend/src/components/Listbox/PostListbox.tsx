@@ -19,6 +19,7 @@ type Props = {
     readonly label?: string;
     readonly defaultSelectedKeys?: Iterable<string>;
     readonly onSelectionChange?: (keys: Selection, selectedItems: PostItem[]) => void;
+    readonly highlightByUserId?: Record<number, string>;
 };
 
 export function PostsListbox({
@@ -26,6 +27,7 @@ export function PostsListbox({
     label = "Posts",
     defaultSelectedKeys = [],
     onSelectionChange,
+    highlightByUserId
 }: Props) {
     const [selected, setSelected] = React.useState<Selection>(
         new Set(defaultSelectedKeys)
@@ -73,16 +75,20 @@ export function PostsListbox({
                     }
                 }}
             >
-                {(item) => (
-                    <ListboxItem key={item.id} textValue={item.title}>
-                        <div className="flex flex-col">
-                            <span className="font-medium">{item.title}</span>
-                            <span className="text-tiny text-default-500">
-                                userId: {item.userId} • id: {item.id}
-                            </span>
-                        </div>
-                    </ListboxItem>
-                )}
+                {(item) => {
+                    const bg = highlightByUserId?.[item.userId];
+                    const style = bg ? { backgroundColor: bg } : undefined;
+                    return (
+                        <ListboxItem key={item.id} textValue={item.title} style={style}>
+                            <div className="flex flex-col">
+                                <span className="font-medium">{item.title}</span>
+                                <span className="text-tiny text-default-500">
+                                    userId: {item.userId} • id: {item.id}
+                                </span>
+                            </div>
+                        </ListboxItem>
+                    );
+                }}
             </Listbox>
         </ListboxWrapper>
     );

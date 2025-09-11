@@ -21,6 +21,7 @@ type Props = {
     readonly label?: string;
     readonly defaultSelectedKeys?: Iterable<string>;
     readonly onSelectionChange?: (keys: Selection, selectedItems: UserItem[]) => void;
+    readonly getColor?: (userId: number) => { bg: string; solid?: string };
 };
 
 export function UserListbox({
@@ -28,6 +29,7 @@ export function UserListbox({
     label = "Assigned to",
     defaultSelectedKeys = [],
     onSelectionChange,
+    getColor,
 }: Props) {
     const [selected, setSelected] = React.useState<Selection>(
         new Set(defaultSelectedKeys)
@@ -48,11 +50,25 @@ export function UserListbox({
             >
                 {selectedIds.map((key) => {
                     const u = items.find((x) => String(x.id) === key);
-                    return <Chip key={key}>{u?.name ?? "Unknown"}</Chip>;
+                    const color = u && getColor ? getColor(u.id) : undefined;
+                    return (
+                        <Chip
+                            key={key}
+                            className="border-0"
+                            style={color ? { backgroundColor: color.bg } : undefined}
+                        >
+                            {u?.name ?? "Unknown"}
+                        </Chip>
+                    );
                 })}
             </ScrollShadow>
         );
-    }, [selectedIds, items]);
+    }, [selectedIds, items, getColor]);
+
+    const isSelectedId = React.useCallback(
+        (id: number) => selectedIds.includes(String(id)),
+        [selectedIds]
+    );
 
     return (
         <ListboxWrapper>
@@ -74,23 +90,27 @@ export function UserListbox({
                     }
                 }}
             >
-                {(item) => (
-                    <ListboxItem key={item.id} textValue={item.name}>
-                        <div className="flex gap-2 items-center">
-                            <Avatar
-                                alt={item.name}
-                                className="shrink-0"
-                                size="sm"
-                                name={item.name}
-                                src={item.avatar}
-                            />
-                            <div className="flex flex-col">
-                                <span className="text-small">{item.name}</span>
-                                <span className="text-tiny text-default-400">{item.email}</span>
+                {(item) => {
+                    const color = getColor?.(item.id);
+                    const style = isSelectedId(item.id) && color ? { backgroundColor: color.bg } : undefined;
+                    return (
+                        <ListboxItem key={item.id} textValue={item.name} style={style}>
+                            <div className="flex gap-2 items-center">
+                                <Avatar
+                                    alt={item.name}
+                                    className="shrink-0"
+                                    size="sm"
+                                    name={item.name}
+                                    src={item.avatar}
+                                />
+                                <div className="flex flex-col">
+                                    <span className="text-small">{item.name}</span>
+                                    <span className="text-tiny text-default-400">{item.email}</span>
+                                </div>
                             </div>
-                        </div>
-                    </ListboxItem>
-                )}
+                        </ListboxItem>
+                    );
+                }}
             </Listbox>
         </ListboxWrapper>
     );
