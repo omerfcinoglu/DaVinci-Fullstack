@@ -1,42 +1,4 @@
-// Single Responsibility: Each vexport class EmailValidator extends BaseValidator<string> {
-  private readonly emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-
-  constructor(private readonly message: string = 'Please enter a valid email') {
-    super();
-  }
-
-  validate(value: string): string | null {
-    return !this.emailRegex.test(value.trim()) ? this.message : null;
-  }
-}
-
-export class MaxLengthValidator extends BaseValidator<string> {
-  constructor(
-    private readonly maxLength: number,
-    private readonly message?: string
-  ) {
-    super();
-  }
-
-  validate(value: string): string | null {
-    const trimmedValue = value.trim();
-    if (trimmedValue.length > this.maxLength) {
-      return this.message || `Must be no more than ${this.maxLength} characters`;
-    }
-    return null;
-  }
-}
-
-export class NumberValidator extends BaseValidator<string> {
-  constructor(private readonly message: string = 'Must be a valid number') {
-    super();
-  }
-
-  validate(value: string): string | null {
-    const num = Number(value);
-    return isNaN(num) || num <= 0 ? this.message : null;
-  }
-}s one job
+// Single Responsibility: Each validator has one job
 export abstract class BaseValidator<T> {
   abstract validate(value: T): string | null;
 }
@@ -68,6 +30,25 @@ export class MinLengthValidator extends BaseValidator<string> {
   }
 }
 
+export class MaxLengthValidator extends BaseValidator<string> {
+  constructor(
+    private readonly maxLength: number,
+    private readonly message?: string
+  ) {
+    super();
+  }
+
+  validate(value: string): string | null {
+    const trimmedValue = value.trim();
+    if (trimmedValue.length > this.maxLength) {
+      return (
+        this.message || `Must be no more than ${this.maxLength} characters`
+      );
+    }
+    return null;
+  }
+}
+
 export class EmailValidator extends BaseValidator<string> {
   private readonly emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -77,6 +58,17 @@ export class EmailValidator extends BaseValidator<string> {
 
   validate(value: string): string | null {
     return !this.emailRegex.test(value.trim()) ? this.message : null;
+  }
+}
+
+export class NumberValidator extends BaseValidator<string> {
+  constructor(private readonly message: string = "Must be a valid number") {
+    super();
+  }
+
+  validate(value: string): string | null {
+    const num = Number(value);
+    return isNaN(num) || num <= 0 ? this.message : null;
   }
 }
 
@@ -115,6 +107,30 @@ export class ValidationFactory {
     return new CompositeValidator([
       new RequiredValidator("Email is required"),
       new EmailValidator(),
+    ]);
+  }
+
+  // Post validators
+  static createPostTitleValidator(): CompositeValidator<string> {
+    return new CompositeValidator([
+      new RequiredValidator("Title is required"),
+      new MinLengthValidator(5, "Title must be at least 5 characters"),
+      new MaxLengthValidator(100, "Title must be no more than 100 characters"),
+    ]);
+  }
+
+  static createPostBodyValidator(): CompositeValidator<string> {
+    return new CompositeValidator([
+      new RequiredValidator("Body is required"),
+      new MinLengthValidator(10, "Body must be at least 10 characters"),
+      new MaxLengthValidator(1000, "Body must be no more than 1000 characters"),
+    ]);
+  }
+
+  static createUserIdValidator(): CompositeValidator<string> {
+    return new CompositeValidator([
+      new RequiredValidator("User is required"),
+      new NumberValidator("Please select a valid user"),
     ]);
   }
 }
