@@ -1,5 +1,5 @@
 import { useEffect } from "react"
-import { fetchPosts, selectPosts, selectPostsError, selectPostsLoading } from "@/store/postSlise"
+import { fetchPosts, selectPosts, selectPostsError, selectPostsLoading } from "@/store/postsSlise"
 import { useAppDispatch, useAppSelector } from "@/store/hooks"
 
 export default function PostsPage() {

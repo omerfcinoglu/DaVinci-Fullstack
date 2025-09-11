@@ -1,4 +1,4 @@
-import { fetchUsers, selectUsers, selectUsersError, selectUsersLoading } from "@/store/userSlice"
+import { fetchUsers, selectUsers, selectUsersError, selectUsersLoading } from "@/store/usersSlice"
 import { useAppDispatch, useAppSelector } from "@/store/hooks"
 
 import { useEffect } from "react"
