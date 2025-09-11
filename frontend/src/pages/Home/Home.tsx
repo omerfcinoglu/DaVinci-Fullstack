@@ -5,7 +5,8 @@ import {
     selectUsers,
     selectUsersLoading,
     updateUser,
-    deleteUserCascade
+    deleteUserCascade,
+    addUser
 } from "@/store/usersSlice";
 
 import DefaultLayout from "@/layouts/default";
@@ -13,9 +14,17 @@ import DefaultLayout from "@/layouts/default";
 
 import { getDeterministicAvatarUrl } from "@/utils/avatar";
 import { PostItem, PostsListbox } from "@/components/Listbox/PostListbox";
-import { fetchPosts, selectPosts, selectPostsLoading } from "@/store/postsSlice";
+import {
+    fetchPosts,
+    selectPosts,
+    selectPostsLoading,
+    addPost,
+    updatePost,
+    deletePost
+} from "@/store/postsSlice";
 import { colorForUserId } from "@/utils/colors";
 import { UserItem, UserListbox } from "@/components/Listbox/User";
+import type { NewPost, Post } from "@/domain/types";
 
 export default function Home() {
     const dispatch = useAppDispatch();
@@ -43,7 +52,27 @@ export default function Home() {
         id: p.id,
         userId: p.userId,
         title: p.title,
+        body: p.body,
     }));
+
+    // Available users for post creation/editing
+    const availableUsers = users.map(u => ({
+        id: u.id,
+        name: u.name
+    }));
+
+    // Post CRUD handlers
+    const handleCreatePost = (postData: NewPost) => {
+        dispatch(addPost(postData));
+    };
+
+    const handleUpdatePost = (id: number, postData: Partial<Post>) => {
+        dispatch(updatePost({ id, patch: postData }));
+    };
+
+    const handleDeletePost = (id: number) => {
+        dispatch(deletePost(id));
+    };
 
     const [selectedUserIds, setSelectedUserIds] = useState<Set<number>>(new Set());
 
@@ -76,7 +105,7 @@ export default function Home() {
     return (
         <DefaultLayout>
             <div className="relative m-0 p-0 flex flex-col mb-10 overflow-hidden">
-                <div className="grid grid-cols-1 md:grid-cols-2  w-full p-4 text-black dark:text-white">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-2 w-full p-4 text-black dark:text-white">
                     {uLoading ? (
                         <p>Loading users…</p>
                     ) : (
@@ -90,6 +119,7 @@ export default function Home() {
                                 dispatch(updateUser({ id, patch }));
                             }}
                             onDeleteUser={(id) => dispatch(deleteUserCascade(id))}
+                            onCreateUser={(input) => dispatch(addUser(input))}
                         />
                     )}
 
@@ -98,6 +128,7 @@ export default function Home() {
                     ) : (
                         <PostsListbox
                             items={filteredPostItems}
+                            availableUsers={availableUsers}
                             label={
                                 (() => {
                                     let label = "Posts";
@@ -109,6 +140,10 @@ export default function Home() {
                                 })()
                             }
                             highlightByUserId={highlightByUserId}
+                            onCreatePost={handleCreatePost}
+                            onUpdatePost={handleUpdatePost}
+                            onDeletePost={handleDeletePost}
+                            isLoading={pLoading}
                         />
                     )}
                 </div>
