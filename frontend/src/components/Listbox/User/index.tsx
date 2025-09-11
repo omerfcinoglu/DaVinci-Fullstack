@@ -1,5 +1,5 @@
 import React from "react";
-import { Listbox, ListboxItem, type Selection } from "@heroui/react";
+import { Button, Listbox, ListboxItem, type Selection } from "@heroui/react";
 import { ListboxWrapper } from "@/components/Listbox/ListboxWrapper";
 import { EditUserModal } from "./EditUserModal";
 import { SelectedChips } from "./SelectedChips";
@@ -70,23 +70,27 @@ export function UserListbox({
                 selectedKeys={selected}
                 variant="flat"
                 topContent={
-                    <SelectedChips
-                        selectedKeys={selectedKeys}
-                        itemsById={itemsById}
-                        getColor={getColor}
-                        onEdit={openEdit}
-                    />
-                }
-                bottomContent={
-                    <div className="sticky bottom-0 z-10 -mb-2 bg-background/60 backdrop-blur p-2 flex justify-center">
-                        <button
-                            type="button"
-                            aria-label="Add user"
-                            className="inline-flex h-8 w-8 items-center justify-center rounded-md bg-primary text-primary-foreground"
-                            onClick={() => { setMode("create"); setEditingUserId(null); setIsOpen(true); }}
-                        >
-                            <PlusIcon size={16} />
-                        </button>
+                    <div className="flex flex-col gap-2">
+                        <div className="flex justify-end items-center">
+                            {onCreateUser && (
+                                <Button
+                                    color="primary"
+                                    size="sm"
+                                    onPress={() => { setMode("create"); setEditingUserId(null); setIsOpen(true); }}
+                                >
+                                    <PlusIcon size={14} />
+                                </Button>
+                            )}
+                        </div>
+
+                        {selectedKeys.length > 0 && (
+                            <SelectedChips
+                                selectedKeys={selectedKeys}
+                                itemsById={itemsById}
+                                getColor={getColor}
+                                onEdit={openEdit}
+                            />
+                        )}
                     </div>
                 }
                 onSelectionChange={handleSelection}
