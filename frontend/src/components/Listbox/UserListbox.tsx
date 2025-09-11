@@ -8,11 +8,10 @@ import {
     type Selection,
 } from "@heroui/react";
 import { ListboxWrapper } from "./ListboxWrapper";
+import { User } from "@/domain/types";
 
 export type UserItem = {
-    id: number;
-    name: string;
-    email: string;
+    user: User;
     avatar?: string;
 };
 
@@ -36,7 +35,7 @@ export function UserListbox({
     );
 
     const selectedIds = React.useMemo(() => {
-        if (selected === "all") return items.map((i) => String(i.id));
+        if (selected === "all") return items.map((i) => String(i.user.id));
         return Array.from(selected).map(String);
     }, [selected, items]);
 
@@ -49,15 +48,15 @@ export function UserListbox({
                 orientation="horizontal"
             >
                 {selectedIds.map((key) => {
-                    const u = items.find((x) => String(x.id) === key);
-                    const color = u && getColor ? getColor(u.id) : undefined;
+                    const u = items.find((x) => String(x.user.id) === key);
+                    const color = u && getColor ? getColor(u.user.id) : undefined;
                     return (
                         <Chip
                             key={key}
                             className="border-0"
                             style={color ? { backgroundColor: color.bg } : undefined}
                         >
-                            {u?.name ?? "Unknown"}
+                            {u?.user.name ?? "Unknown"}
                         </Chip>
                     );
                 })}
@@ -85,33 +84,37 @@ export function UserListbox({
                         const picked =
                             keys === "all"
                                 ? Array.from(items)
-                                : items.filter((i) => (keys as Set<React.Key>).has(String(i.id)));
+                                : items.filter((i) => (keys as Set<React.Key>).has(String(i.user.id)));
                         onSelectionChange(keys, picked);
                     }
                 }}
             >
                 {(item) => {
-                    const color = getColor?.(item.id);
-                    const style = isSelectedId(item.id) && color ? { backgroundColor: color.bg } : undefined;
+                    const color = getColor?.(item.user.id);
+                    const style = isSelectedId(item.user.id) && color ? { backgroundColor: color.bg } : undefined;
                     return (
-                        <ListboxItem key={item.id} textValue={item.name} style={style}>
+                        <ListboxItem key={item.user.id} textValue={item.user.name} style={style}>
                             <div className="flex gap-2 items-center">
                                 <Avatar
-                                    alt={item.name}
+                                    alt={item.user.name}
                                     className="shrink-0"
                                     size="sm"
-                                    name={item.name}
+                                    name={item.user.name}
                                     src={item.avatar}
                                 />
                                 <div className="flex flex-col">
-                                    <span className="text-small">{item.name}</span>
-                                    <span className="text-tiny text-default-400">{item.email}</span>
+                                    <span className="text-small">{item.user.name}</span>
+                                    <div className="flex flex-row gap-1">
+                                        <span className="text-tiny text-default-400">{item.user.id}</span>
+                                        <span className="text-tiny text-default-400">{item.user.username}</span>
+                                        <span className="text-tiny text-default-400">{item.user.email}</span>
+                                    </div>
                                 </div>
                             </div>
                         </ListboxItem>
                     );
                 }}
-            </Listbox>
-        </ListboxWrapper>
+            </Listbox >
+        </ListboxWrapper >
     );
 }

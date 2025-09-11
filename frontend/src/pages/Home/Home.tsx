@@ -30,9 +30,12 @@ export default function Home() {
     }, [dispatch]);
 
     const userItems: UserItem[] = users.map((u) => ({
-        id: u.id,
-        name: u.name,
-        email: u.email,
+        user: {
+            id: u.id,
+            name: u.name,
+            username: u.username,
+            email: u.email,
+        },
         avatar: getDeterministicAvatarUrl(`${u.id}-${u.email}`),
     }));
 
@@ -45,13 +48,13 @@ export default function Home() {
     const [selectedUserIds, setSelectedUserIds] = useState<Set<number>>(new Set());
 
     const onUsersChange = (_: unknown, selectedUsers: UserItem[]) => {
-        const ids = new Set(selectedUsers.map((u) => u.id));
+        const ids = new Set(selectedUsers.map((u) => u.user.id));
         setSelectedUserIds(ids);
     };
 
     const userColorMap = useMemo(() => {
         const map: Record<number, { bg: string; solid?: string }> = {}
-        for (const u of userItems) map[u.id] = colorForUserId(u.id)
+        for (const u of userItems) map[u.user.id] = colorForUserId(u.user.id)
         return map
     }, [userItems])
 
@@ -93,9 +96,14 @@ export default function Home() {
                         <PostsListbox
                             items={filteredPostItems}
                             label={
-                                selectedUserIds.size
-                                    ? `Posts (filtered by ${selectedUserIds.size} user${selectedUserIds.size > 1 ? "s" : ""})`
-                                    : "Posts"
+                                (() => {
+                                    let label = "Posts";
+                                    if (selectedUserIds.size) {
+                                        const userText = selectedUserIds.size > 1 ? "users" : "user";
+                                        label = `Posts (filtered by ${selectedUserIds.size} ${userText})`;
+                                    }
+                                    return label;
+                                })()
                             }
                             highlightByUserId={highlightByUserId} // ← postları aynı renkle vurgula
                         />
