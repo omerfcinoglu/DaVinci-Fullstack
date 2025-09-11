@@ -2,7 +2,7 @@ import { configureStore } from "@reduxjs/toolkit";
 import { restDataSource } from "../data/rest";
 import type { DataSource } from "../data/ports";
 import usersReducer from "./usersSlice";
-import postsReducer from "./postsSlise";
+import postsReducer from "./postsSlice";
 
 export const dataSource: DataSource = restDataSource;
 

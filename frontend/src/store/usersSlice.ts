@@ -2,7 +2,7 @@ import { createAsyncThunk, createSlice, PayloadAction } from "@reduxjs/toolkit";
 import type { NewUser, UpdateUser, User } from "../domain/types";
 import type { RootState, ThunkExtra } from "./store";
 import { nextId } from "@/helper/funcs";
-import { removePostsByUser } from "./postsSlise";
+import { removePostsByUser } from "./postsSlice";
 
 type UsersState = {
   items: User[];
