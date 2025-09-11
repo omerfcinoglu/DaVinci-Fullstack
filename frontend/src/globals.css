@@ -1,0 +1,7 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* opsiyonel küçük varsayılanlar */
+:root { color-scheme: light dark; }
+html, body, #root { height: 100%; }

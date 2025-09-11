@@ -1,12 +1,13 @@
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 import tsconfigPaths from "vite-tsconfig-paths";
-import path from "path";
 
-// https://vite.dev/config/
 export default defineConfig({
   plugins: [react(), tsconfigPaths()],
-  resolve: { alias: { "@": path.resolve(__dirname, "src") } },
+  resolve: {
+    alias: { "@": "/src" },
+    dedupe: ["react", "react-dom"],
+  },
   base: "./",
   build: {
     outDir: "dist",
@@ -21,6 +22,15 @@ export default defineConfig({
     },
   },
   optimizeDeps: {
-    include: ["@heroui/react", "@heroui/button"],
+    include: [
+      "react",
+      "react-dom",
+      "react-redux",
+      "@reduxjs/toolkit",
+      "react-router-dom",
+      "@heroui/react",
+      "clsx",
+      "framer-motion",
+    ],
   },
 });
