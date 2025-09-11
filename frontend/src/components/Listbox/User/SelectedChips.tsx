@@ -1,6 +1,6 @@
 import React from "react";
 import { Chip, ScrollShadow } from "@heroui/react";
-import { EditIcon, PlusIcon } from "lucide-react";
+import { EditIcon } from "lucide-react";
 import type { UserItem, GetColor } from "./types";
 
 type Props = {
