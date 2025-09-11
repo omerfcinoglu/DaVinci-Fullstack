@@ -7,15 +7,13 @@ import {
 } from "@/store/usersSlice";
 
 import DefaultLayout from "@/layouts/default";
-import {
-    UserListbox,
-    type UserItem,
-} from "@/components/Listbox/UserListbox";
+
 
 import { getDeterministicAvatarUrl } from "@/utils/avatar";
 import { PostItem, PostsListbox } from "@/components/Listbox/PostListbox";
 import { fetchPosts, selectPosts, selectPostsLoading } from "@/store/postsSlice";
 import { colorForUserId } from "@/utils/colors";
+import { UserItem, UserListbox } from "@/components/Listbox/User";
 
 export default function Home() {
     const dispatch = useAppDispatch();
