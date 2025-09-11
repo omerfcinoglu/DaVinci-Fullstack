@@ -1,8 +1,8 @@
 import { configureStore } from "@reduxjs/toolkit";
-import usersReducer from "./usersSlice";
-import postsReducer from "./postsSlice";
 import { restDataSource } from "../data/rest";
 import type { DataSource } from "../data/ports";
+import usersReducer from "./usersSlice";
+import postsReducer from "./postsSlise";
 
 export const dataSource: DataSource = restDataSource;
 
@@ -20,5 +20,4 @@ export const store = configureStore({
 export type RootState = ReturnType<typeof store.getState>;
 export type AppDispatch = typeof store.dispatch;
 
-// Thunk extra typing helper
 export type ThunkExtra = DataSource;
