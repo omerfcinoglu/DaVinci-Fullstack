@@ -1,6 +1,7 @@
 import { useEffect } from "react"
 import { fetchPosts, selectPosts, selectPostsError, selectPostsLoading } from "@/store/postsSlice"
 import { useAppDispatch, useAppSelector } from "@/store/hooks"
+import DefaultLayout from "@/layouts/default"
 
 export default function PostsPage() {
     const dispatch = useAppDispatch()
@@ -11,7 +12,7 @@ export default function PostsPage() {
     useEffect(() => { dispatch(fetchPosts()) }, [dispatch])
 
     return (
-        <section>
+        <DefaultLayout>
             <h2 className="text-xl font-semibold mb-3">Posts</h2>
             {loading && <p>Loading…</p>}
             {error && <p className="text-red-400">{error}</p>}
@@ -35,6 +36,6 @@ export default function PostsPage() {
                     </tbody>
                 </table>
             </div>
-        </section>
+        </DefaultLayout>
     )
 }
