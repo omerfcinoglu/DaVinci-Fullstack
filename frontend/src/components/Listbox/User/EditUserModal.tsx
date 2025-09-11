@@ -1,4 +1,4 @@
-import React from "react";
+import { useEffect, useState } from "react";
 import { Button, Input, Modal, ModalBody, ModalContent, ModalFooter, ModalHeader } from "@heroui/react";
 import type { User } from "@/domain/types";
 
@@ -10,9 +10,9 @@ type Props = {
 };
 
 export function EditUserModal({ isOpen, user, onClose, onSave }: Props) {
-    const [form, setForm] = React.useState({ name: "", username: "", email: "" });
+    const [form, setForm] = useState({ name: "", username: "", email: "" });
 
-    React.useEffect(() => {
+    useEffect(() => {
         if (user) {
             setForm({ name: user.name, username: user.username, email: user.email });
         }

@@ -4,6 +4,7 @@ import {
     fetchUsers,
     selectUsers,
     selectUsersLoading,
+    updateUser,
 } from "@/store/usersSlice";
 
 import DefaultLayout from "@/layouts/default";
@@ -56,7 +57,6 @@ export default function Home() {
         return map
     }, [userItems])
 
-    // Filtrelenmiş postlar (Users seçimine göre)
     const filteredPostItems = useMemo(() => {
         if (!selectedUserIds.size) return allPostItems;
         return allPostItems.filter((p) => selectedUserIds.has(p.userId));
@@ -75,7 +75,7 @@ export default function Home() {
     return (
         <DefaultLayout>
             <div className="relative m-0 p-0 flex flex-col mb-10 overflow-hidden">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-10 w-full px-4 text-black dark:text-white">
+                <div className="grid grid-cols-1 md:grid-cols-2  w-full p-4 text-black dark:text-white">
                     {uLoading ? (
                         <p>Loading users…</p>
                     ) : (
@@ -84,7 +84,10 @@ export default function Home() {
                             label="Users"
                             defaultSelectedKeys={[]}
                             onSelectionChange={onUsersChange}
-                            getColor={(id) => userColorMap[id]}  // ← seçili user item'larını renkle
+                            getColor={(id) => userColorMap[id]}
+                            onSaveUser={(id, patch) => {
+                                dispatch(updateUser({ id, patch }));
+                            }}
                         />
                     )}
 
@@ -103,7 +106,7 @@ export default function Home() {
                                     return label;
                                 })()
                             }
-                            highlightByUserId={highlightByUserId} // ← postları aynı renkle vurgula
+                            highlightByUserId={highlightByUserId}
                         />
                     )}
                 </div>
