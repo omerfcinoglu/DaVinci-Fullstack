@@ -1,70 +1,95 @@
-import { useEffect } from "react"
-import { Listbox, ListboxItem } from "@heroui/listbox"
-import { Link } from "react-router-dom"
-import { fetchPosts, selectPosts, selectPostsLoading } from "@/store/postsSlise"
-import { fetchUsers, selectUsers, selectUsersLoading } from "@/store/usersSlice"
-import { useAppDispatch, useAppSelector } from "@/store/hooks"
-import DefaultLayout from "@/layouts/default"
+import { useEffect, useMemo, useState } from "react";
+import { useAppDispatch, useAppSelector } from "@/store/hooks";
+import {
+    fetchUsers,
+    selectUsers,
+    selectUsersLoading,
+} from "@/store/usersSlice";
+
+import DefaultLayout from "@/layouts/default";
+import {
+    UserListbox,
+    type UserItem,
+} from "@/components/Listbox/UserListbox";
+
+import { getDeterministicAvatarUrl } from "@/utils/avatar";
+import { PostItem, PostsListbox } from "@/components/Listbox/PostListbox";
+import { fetchPosts, selectPosts, selectPostsLoading } from "@/store/postsSlice";
 
 export default function Home() {
-    const dispatch = useAppDispatch()
-    const users = useAppSelector(selectUsers)
-    const posts = useAppSelector(selectPosts)
-    const uLoading = useAppSelector(selectUsersLoading)
-    const pLoading = useAppSelector(selectPostsLoading)
+    const dispatch = useAppDispatch();
+    const users = useAppSelector(selectUsers);
+    const posts = useAppSelector(selectPosts);
+    const uLoading = useAppSelector(selectUsersLoading);
+    const pLoading = useAppSelector(selectPostsLoading);
 
     useEffect(() => {
-        dispatch(fetchUsers())
-        dispatch(fetchPosts())
-    }, [dispatch])
+        dispatch(fetchUsers());
+        dispatch(fetchPosts());
+    }, [dispatch]);
+
+    const userItems: UserItem[] = users.map((u) => ({
+        id: u.id,
+        name: u.name,
+        email: u.email,
+        avatar: getDeterministicAvatarUrl(`${u.id}-${u.email}`),
+    }));
+
+    const allPostItems: PostItem[] = posts.map((p) => ({
+        id: p.id,
+        userId: p.userId,
+        title: p.title,
+    }));
+
+    const [selectedUserIds, setSelectedUserIds] = useState<Set<number>>(new Set());
+
+    const onUsersChange = (_: unknown, selectedUsers: UserItem[]) => {
+        const ids = new Set(selectedUsers.map((u) => u.id));
+        setSelectedUserIds(ids);
+    };
+
+    // Filtrelenmiş postlar (Users seçimine göre)
+    const filteredPostItems = useMemo(() => {
+        if (!selectedUserIds.size) return allPostItems;
+        return allPostItems.filter((p) => selectedUserIds.has(p.userId));
+    }, [allPostItems, selectedUserIds]);
 
     return (
         <DefaultLayout>
-            <section className="space-y-6">
-                <h1 className="text-2xl font-bold">Homepage</h1>
-                <div className="flex gap-4">
-                    <Link className="underline" to="/users">Users</Link>
-                    <Link className="underline" to="/posts">Posts</Link>
-                </div>
+            <div className="relative m-0 p-0 flex flex-col mb-10 overflow-hidden">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-10 w-full px-4 text-black dark:text-white">
+                    {uLoading ? (
+                        <p>Loading users…</p>
+                    ) : (
+                        <UserListbox
+                            items={userItems}
+                            label="Users"
+                            defaultSelectedKeys={[]}
+                            onSelectionChange={onUsersChange}
+                        />
+                    )}
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div>
-                        <h2 className="mb-2 font-semibold">Users (first 10)</h2>
-                        {uLoading ? (
-                            <p>Loading users…</p>
-                        ) : (
-                            <Listbox aria-label="Users list">
-                                {users.slice(0, 10).map(u => (
-                                    <ListboxItem key={u.id} textValue={`${u.username}`}>
-                                        <div className="flex flex-col">
-                                            <span className="font-medium">{u.name} <span className="opacity-60">(@{u.username})</span></span>
-                                            <span className="text-sm opacity-80">{u.email}</span>
-                                        </div>
-                                    </ListboxItem>
-                                ))}
-                            </Listbox>
-                        )}
-                    </div>
-
-                    <div>
-                        <h2 className="mb-2 font-semibold">Posts (first 10)</h2>
-                        {pLoading ? (
-                            <p>Loading posts…</p>
-                        ) : (
-                            <Listbox aria-label="Posts list">
-                                {posts.slice(0, 10).map(p => (
-                                    <ListboxItem key={p.id} textValue={p.title}>
-                                        <div className="flex flex-col">
-                                            <span className="font-medium">{p.title}</span>
-                                            <span className="text-sm opacity-80">userId: {p.userId} • id: {p.id}</span>
-                                        </div>
-                                    </ListboxItem>
-                                ))}
-                            </Listbox>
-                        )}
-                    </div>
+                    {pLoading ? (
+                        <p>Loading posts…</p>
+                    ) : (
+                        <PostsListbox
+                            items={filteredPostItems}
+                            label={
+                                (() => {
+                                    if (selectedUserIds.size) {
+                                        const userLabel = selectedUserIds.size > 1 ? "users" : "user";
+                                        return `Posts (filtered by ${selectedUserIds.size} ${userLabel})`;
+                                    }
+                                    return "Posts";
+                                })()
+                            }
+                            onSelectionChange={(_, selectedPosts) => {
+                                console.log("Selected posts:", selectedPosts);
+                            }}
+                        />
+                    )}
                 </div>
-            </section>
+            </div>
         </DefaultLayout>
-    )
+    );
 }
